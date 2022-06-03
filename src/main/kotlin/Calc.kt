@@ -6,6 +6,13 @@ fun repMtoPM(v: String): String = v.replace("-", "+-")
 
 val groupMD = """((?:\+-?)?[.\d]+)([*/])((?:\+-?)?[.\d]+)""".toRegex()
 
+fun cut(v: String): String = if (v[0] == '+') {
+    v.substring(1)
+} else {
+    v
+}
+
+
 fun foldGroup(v: String): Double = groupMD.findAll(v).fold(0.0) { acc, curr ->
     val (_, left, op, right) = curr.groupValues
     val leftValue = left.replace("+", "").toDouble()
@@ -19,4 +26,13 @@ fun foldGroup(v: String): Double = groupMD.findAll(v).fold(0.0) { acc, curr ->
     acc + result
 }
 
-fun calc(v: String) = foldGroup(repMtoPM(trim(v)))
+
+fun calc(v: String) {
+    val str = cut(repMtoPM(trim(v)))
+
+//    println(str)
+
+
+
+    foldGroup(str)
+}
