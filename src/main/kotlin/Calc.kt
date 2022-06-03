@@ -17,7 +17,7 @@ fun parseExpression(v: String) = expression.find(v)?.value
 
 val operator = """^[+/*]""".toRegex()
 
-fun parseOperator(v:String) = operator.find(v)?.value
+fun parseOperator(v: String) = operator.find(v)?.value
 
 val groupMD = """((?:\+-?)?[.\d]+)([*/])((?:\+-?)?[.\d]+)""".toRegex()
 
@@ -35,9 +35,9 @@ fun foldGroup(v: String): Double = groupMD.findAll(v).fold(0.0) { acc, curr ->
     acc + result
 }
 
-
 fun calc(v: String) {
     var str = cut(repMtoPM(trim(v)))
+
     val exp1 = parseExpression(str) ?: return
     str = str.substring(exp1.length)
 
