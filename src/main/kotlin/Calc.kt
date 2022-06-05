@@ -6,7 +6,7 @@ val MtoPM = """(?<!^|[*/(])-""".toRegex()
 
 fun repMtoPM(v: String): String = v.replace(MtoPM, "+-")
 
-val re = """^(-?[.\d]+|[+/*])""".toRegex()
+val re = """^(-?[.\d]+|[+/*()])""".toRegex()
 
 fun parse(v: String) = re.find(v)
 
@@ -25,22 +25,33 @@ fun calc(v: String): Double {
         value
     }
 
-    return f(next, next().toDouble(), next())
-}
+    fun f(curr: Double, op: String): Double {
+        val c = next()
+        val n = if (c == "(") f(next().toDouble(), next()) else c.toDouble()
 
-fun f(next: () -> String, curr: Double, op: String): Double {
-    val n = next().toDouble()
+        val nextOp: String
+        try {
+            nextOp = next()
+        } catch (e: Throwable) {
+            return eval(op, curr, n)
+        }
 
-    val nextOp: String
-    try {
-        nextOp = next()
-    } catch (e: Throwable) {
-        return eval(op, curr, n)
+        return if (op == "+") {
+            when (nextOp) {
+                "*", "/" -> eval(op, curr, f(n, nextOp))
+                ")" -> eval(op, curr, n)
+                "+" -> f(eval(op, curr, n), nextOp)
+                else -> throw Throwable("Invalid operator $nextOp")
+            }
+        } else {
+            when (nextOp) {
+                "*", "/", "+" -> f(eval(op, curr, n), nextOp)
+                ")" -> eval(op, curr, n)
+                else -> throw Throwable("Invalid operator $nextOp")
+            }
+        }
     }
 
-    return if (op == "+" && nextOp != "+") {
-        eval(op, curr, f(next, n, nextOp))
-    } else {
-        f(next, eval(op, curr, n), nextOp)
-    }
+    return f(next().toDouble(), next())
+
 }
