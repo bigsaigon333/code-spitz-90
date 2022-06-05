@@ -4,55 +4,47 @@ fun trim(v: String): String = v.replace(trim, "")
 
 fun repMtoPM(v: String): String = v.replace("-", "+-")
 
-
 fun cut(v: String): String = if (v[0] == '+') {
     v.substring(1)
 } else {
     v
 }
 
-val expression = """^(-?[.\d]+)""".toRegex()
+val expression = """^\+?(-?[.\d]+)""".toRegex()
 
-fun parseExpression(v: String) = expression.find(v)?.value
+fun parseExpression(v: String) = expression.find(v)?.groupValues?.get(1)
 
 val operator = """^[+/*]""".toRegex()
 
 fun parseOperator(v: String) = operator.find(v)?.value
 
-val groupMD = """((?:\+-?)?[.\d]+)([*/])((?:\+-?)?[.\d]+)""".toRegex()
-
-
-fun foldGroup(v: String): Double = groupMD.findAll(v).fold(0.0) { acc, curr ->
-    val (_, left, op, right) = curr.groupValues
-    val leftValue = left.replace("+", "").toDouble()
-    val rightValue = right.replace("+", "").toDouble()
-    val result = when (op) {
+fun eval(op: String, leftValue: Double, rightValue: Double): Double =
+    when (op) {
+        "+" -> leftValue + rightValue
         "*" -> leftValue * rightValue
         "/" -> leftValue / rightValue
         else -> throw Throwable("Invalid operator $op")
     }
 
-    acc + result
-}
+fun calc(v: String): Double = _calc(cut(repMtoPM(trim(v))))
 
-fun calc(v: String) {
-    var str = cut(repMtoPM(trim(v)))
+fun _calc(v: String): Double {
+    var str = v
 
-    val exp1 = parseExpression(str) ?: return
-    str = str.substring(exp1.length)
+    val exp = parseExpression(str) ?: return 0.0
+    str = str.substring(exp.length)
+    val exp1 = exp.toDouble()
 
-    val op = parseOperator(str) ?: return
+    if (str == "") return exp1
+
+    val op = parseOperator(str) ?: throw Throwable("Invalid operator $str")
     str = str.substring(op.length)
 
-    val exp2 = parseExpression(str) ?: return
-    str = str.substring(exp2.length)
+    val _exp = parseExpression(str) ?: throw Throwable("Invalid expression $str")
+    str = str.substring(exp.length)
+    val exp2 = _exp.toDouble()
 
+    println("$op $exp1 $exp2")
 
-    println(exp1)
-    println(op)
-    println(exp2)
-
-
-
-    foldGroup(str)
+    return eval(op, exp1, exp2)
 }
