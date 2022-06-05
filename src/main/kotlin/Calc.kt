@@ -4,11 +4,7 @@ fun trim(v: String): String = v.replace(trim, "")
 
 fun repMtoPM(v: String): String = v.replace("-", "+-")
 
-fun cut(v: String): String = if (v[0] == '+') {
-    v.substring(1)
-} else {
-    v
-}
+fun cut(v: String): String = if (v[0] == '+') v.substring(1) else v
 
 val expression = """^\+?(-?[.\d]+)""".toRegex()
 
@@ -18,13 +14,12 @@ val operator = """^[+/*]""".toRegex()
 
 fun parseOperator(v: String) = operator.find(v)?.value
 
-fun eval(op: String, leftValue: Double, rightValue: Double): Double =
-    when (op) {
-        "+" -> leftValue + rightValue
-        "*" -> leftValue * rightValue
-        "/" -> leftValue / rightValue
-        else -> throw Throwable("Invalid operator $op")
-    }
+fun eval(op: String, leftValue: Double, rightValue: Double): Double = when (op) {
+    "+" -> leftValue + rightValue
+    "*" -> leftValue * rightValue
+    "/" -> leftValue / rightValue
+    else -> throw Throwable("Invalid operator $op")
+}
 
 fun calc(v: String): Double = _calc(cut(repMtoPM(trim(v))))
 
