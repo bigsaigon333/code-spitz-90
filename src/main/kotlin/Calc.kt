@@ -1,3 +1,5 @@
+import java.util.*
+
 val trim = """[^.\d-+*()/]""".toRegex()
 
 fun trim(v: String): String = v.replace(trim, "")
@@ -25,6 +27,8 @@ fun calc(v: String): Double {
         value
     }
 
+    val env = LinkedList<Pair<Double, String>>()
+
     fun f(curr: Double, op: String): Double {
         val c = next()
         val n = if (c == "(") f(next().toDouble(), next()) else c.toDouble()
@@ -33,22 +37,65 @@ fun calc(v: String): Double {
         try {
             nextOp = next()
         } catch (e: Throwable) {
-            return eval(op, curr, n)
+            var result = eval(op, curr, n)
+            while (!env.isEmpty()) {
+                val (_curr, _op) = env.pop()
+                result = eval(_op, _curr, result)
+            }
+            return result
         }
 
-        return if (op == "+") {
-            when (nextOp) {
-                "*", "/" -> eval(op, curr, f(n, nextOp))
-                ")" -> eval(op, curr, n)
-                "+" -> f(eval(op, curr, n), nextOp)
-                else -> throw Throwable("Invalid operator $nextOp")
+        return when (op) {
+            "+" -> {
+                when (nextOp) {
+                    "*", "/" -> {
+                        env.add(curr to op)
+                        f(n, nextOp)
+                    }
+                    ")" -> {
+                        var result = eval(op, curr, n)
+                        while (!env.isEmpty()) {
+                            val (_curr, _op) = env.pop()
+                            result = eval(_op, _curr, result)
+                        }
+                        result
+                    }
+                    "+" -> {
+                        var result = eval(op, curr, n)
+                        while (!env.isEmpty()) {
+                            val (_curr, _op) = env.pop()
+                            result = eval(_op, _curr, result)
+                        }
+
+                        f(result, nextOp)
+                    }
+                    else -> throw Throwable("Invalid operator $nextOp")
+                }
             }
-        } else {
-            when (nextOp) {
-                "*", "/", "+" -> f(eval(op, curr, n), nextOp)
-                ")" -> eval(op, curr, n)
-                else -> throw Throwable("Invalid operator $nextOp")
+            "*", "/" -> {
+                when (nextOp) {
+                    "*", "/" -> f(eval(op, curr, n), nextOp)
+                    "+" -> {
+                        var result = eval(op, curr, n)
+                        while (!env.isEmpty()) {
+                            val (_curr, _op) = env.pop()
+                            result = eval(_op, _curr, result)
+                        }
+
+                        f(result, nextOp)
+                    }
+                    ")" -> {
+                        var result = eval(op, curr, n)
+                        while (!env.isEmpty()) {
+                            val (_curr, _op) = env.pop()
+                            result = eval(_op, _curr, result)
+                        }
+                        result
+                    }
+                    else -> throw Throwable("Invalid operator $nextOp")
+                }
             }
+            else -> throw Throwable("Invalid operator $op")
         }
     }
 
