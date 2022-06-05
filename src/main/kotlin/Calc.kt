@@ -1,8 +1,8 @@
-val trim = """[^.\d-+*/]""".toRegex()
+val trim = """[^.\d-+*()/]""".toRegex()
 
 fun trim(v: String): String = v.replace(trim, "")
 
-val MtoPM = """(?<!^|[*/])-""".toRegex()
+val MtoPM = """(?<!^|[*/(])-""".toRegex()
 
 fun repMtoPM(v: String): String = v.replace(MtoPM, "+-")
 
