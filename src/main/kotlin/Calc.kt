@@ -2,7 +2,7 @@ val trim = """[^.\d-+*/]""".toRegex()
 
 fun trim(v: String): String = v.replace(trim, "")
 
-fun repMtoPM(v: String): String = v.replace("-", "+-")
+fun repMtoPM(v: String): String = v.replace("-", "+-").replace("*+", "*").replace("/+", "/")
 
 fun cut(v: String): String = if (v[0] == '+') v.substring(1) else v
 
