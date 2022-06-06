@@ -29,75 +29,55 @@ fun calc(v: String): Double {
 
     val env = LinkedList<Pair<Double, String>>()
 
-    fun f(curr: Double, op: String): Double {
-        val c = next()
-        val n = if (c == "(") f(next().toDouble(), next()) else c.toDouble()
-
-        val nextOp = try {
+    fun f(): Double {
+        val token = next()
+        val cur = token.toDouble()
+        val op = try {
             next()
-        } catch (e: Throwable) {
-            var result = eval(op, curr, n)
-            while (!env.isEmpty()) {
-                val (_curr, _op) = env.pop()
-                result = eval(_op, _curr, result)
-            }
+        } catch (_: Throwable) {
+            var result = cur
+            do {
+                val (prev, pop) = env.pop()
+                result = eval(pop, prev, result)
+            } while (!env.isEmpty())
+
             return result
         }
 
-        return when (op) {
-            "+" -> {
-                when (nextOp) {
-                    "*", "/" -> {
-                        env.add(curr to op)
-                        f(n, nextOp)
-                    }
-                    ")" -> {
-                        var result = eval(op, curr, n)
-                        while (!env.isEmpty()) {
-                            val (_curr, _op) = env.pop()
-                            result = eval(_op, _curr, result)
-                        }
-                        result
-                    }
-                    "+" -> {
-                        var result = eval(op, curr, n)
-                        while (!env.isEmpty()) {
-                            val (_curr, _op) = env.pop()
-                            result = eval(_op, _curr, result)
-                        }
 
-                        f(result, nextOp)
-                    }
-                    else -> throw Throwable("Invalid operator $nextOp")
-                }
-            }
-            "*", "/" -> {
-                when (nextOp) {
-                    "*", "/" -> f(eval(op, curr, n), nextOp)
-                    "+" -> {
-                        var result = eval(op, curr, n)
-                        while (!env.isEmpty()) {
-                            val (_curr, _op) = env.pop()
-                            result = eval(_op, _curr, result)
-                        }
+        if (env.isEmpty()) {
+            env.push(cur to op)
+        } else {
+            val (prev, pop) = env.first
 
-                        f(result, nextOp)
-                    }
-                    ")" -> {
-                        var result = eval(op, curr, n)
-                        while (!env.isEmpty()) {
-                            val (_curr, _op) = env.pop()
-                            result = eval(_op, _curr, result)
+            when (pop) {
+                "+" -> {
+                    when (op) {
+                        "*", "/" -> {
+                            env.push(cur to op)
                         }
-                        result
+                        "+" -> {
+                            env.pop()
+                            env.push(eval(pop, prev, cur) to op)
+                        }
+                        else -> throw Throwable("Invalid operator $op")
                     }
-                    else -> throw Throwable("Invalid operator $nextOp")
                 }
+                "*", "/" -> {
+                    when (op) {
+                        "*", "/", "+" -> {
+                            env.pop()
+                            env.push(eval(pop, prev, cur) to op)
+                        }
+                        else -> throw Throwable("Invalid operator $op")
+                    }
+                }
+                else -> throw Throwable("Invalid operator $pop")
             }
-            else -> throw Throwable("Invalid operator $op")
         }
+
+        return f()
     }
 
-    return f(next().toDouble(), next())
-
+    return f()
 }
