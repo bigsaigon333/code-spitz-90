@@ -27,52 +27,36 @@ fun calc(v: String): Double {
         value
     }
 
-    val env = LinkedList<Pair<Double, String>>()
 
-    fun f(): Double {
+    fun f(env: LinkedList<Pair<Double, String>>): Double {
         val token = next()
 
-        if (token == "(") {
-            env.push(0.0 to "(")
-            return f()
+        val cur = if (token == "(") {
+            f(LinkedList<Pair<Double, String>>())
+        } else {
+            token.toDouble()
         }
 
-        val cur = token.toDouble()
         val op = try {
             next()
         } catch (_: Throwable) {
             var result = cur
-            do {
+            while (!env.isEmpty()) {
                 val (prev, pop) = env.pop()
                 result = eval(pop, prev, result)
-            } while (!env.isEmpty())
+            }
 
             return result
         }
 
         if (op == ")") {
             var result = cur
-            do {
+            while (!env.isEmpty()) {
                 val (prev, pop) = env.pop()
                 result = eval(pop, prev, result)
-            } while (!env.isEmpty() && env.first.second != "(")
-
-            env.pop()
-
-            val nextOp =  try {
-                next()
-            } catch (_: Throwable) {
-                do {
-                    val (prev, pop) = env.pop()
-                    result = eval(pop, prev, result)
-                } while (!env.isEmpty())
-
-                return result
             }
 
-            env.push(result to nextOp)
-
-            return f()
+            return result
         }
 
         if (env.isEmpty()) {
@@ -81,9 +65,6 @@ fun calc(v: String): Double {
             val (prev, pop) = env.first
 
             when (pop) {
-                "(" -> {
-                    env.push(cur to op)
-                }
                 "+" -> {
                     when (op) {
                         "*", "/" -> {
@@ -109,8 +90,8 @@ fun calc(v: String): Double {
             }
         }
 
-        return f()
+        return f(env)
     }
 
-    return f()
+    return f(LinkedList<Pair<Double, String>>())
 }
