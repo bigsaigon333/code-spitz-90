@@ -33,9 +33,8 @@ fun calc(v: String): Double {
         val c = next()
         val n = if (c == "(") f(next().toDouble(), next()) else c.toDouble()
 
-        val nextOp: String
-        try {
-            nextOp = next()
+        val nextOp = try {
+            next()
         } catch (e: Throwable) {
             var result = eval(op, curr, n)
             while (!env.isEmpty()) {
